@@ -74,7 +74,7 @@ BANNER_SUB = "[banner.sub]⚡ Telegram Multi-Tool ⚡      [/]"
 
 
 def print_banner():
-    """Prints main banner"""
+    # Prints main banner
     banner_text = Text()
     lines = []
     lines.append("")
@@ -103,12 +103,12 @@ def print_banner():
 # ══════════════════════════════════════════════════════════════
 
 def print_separator(style: str = "blade", char: str = "-"):
-    """Horizontal divisor"""
+    # Horizontal divisor
     console.print(Rule(style=style, characters=char))
 
 
 def print_header(title: str):
-    """Header in pannel section"""
+    # Header in pannel section
     console.print()
     panel = Panel(
         Align.center(f"[bold white]{title}[/]"),
@@ -120,7 +120,7 @@ def print_header(title: str):
 
 
 def print_sub_header(title: str):
-    """h2"""
+    # h2
     console.print()
     console.print(
         Panel(
@@ -137,67 +137,67 @@ def print_sub_header(title: str):
 # ══════════════════════════════════════════════════════════════
 
 def print_info(msg: str):
-    """Info message"""
+    # Info message
     console.print(f"  [info][ℹ][/] {msg}")
 
 
 def print_success(msg: str):
-    """Succesful action"""
+    # Succesful action
     console.print(f"  [success][✓][/] {msg}")
 
 
 def print_error(msg: str):
-    """Error"""
+    # Error
     console.print(f"  [error][✗][/] {msg}")
 
 
 def print_warning(msg: str):
-    """Warning"""
+    # Warning
     console.print(f"  [warning][⚠][/] {msg}")
 
 
 def print_action(msg: str):
-    """Action in process"""
+    # Action in process
     console.print(f"  [action][→][/] {msg}")
 
 
 def print_wait(msg: str):
-    """Await"""
+    # Await
     console.print(f"  [wait][⏳][/] {msg}")
 
 
 def print_skull(msg: str):
-    """Danger action"""
+    # Danger action
     console.print(f"  [skull][💀][/] {msg}")
 
 
 def print_fire(msg: str):
-    """Fire marker"""
+    # Fire marker
     console.print(f"  [fire][🔥][/] {msg}")
 
 
 def print_dim(msg: str):
-    """Shadowed text"""
+    # Shadowed text
     console.print(f"  [shadow]{msg}[/]")
 
 
 def print_call(msg: str):
-    """Call"""
+    # Call
     console.print(f"  [info][📞][/] {msg}")
 
 
 def print_lock(msg: str):
-    """Secret chat"""
+    # Secret chat
     console.print(f"  [info][🔐][/] {msg}")
 
 
 def print_trash(msg: str):
-    """Removal"""
+    # Removal
     console.print(f"  [shadow][🗑][/] {msg}")
 
 
 def print_timer(msg: str):
-    """Timer"""
+    # Timer
     console.print(f"  [gold][⏱][/] {msg}")
 
 
@@ -206,7 +206,7 @@ def print_timer(msg: str):
 # ══════════════════════════════════════════════════════════════
 
 def ask_input(prompt: str, default: str = "") -> str:
-    """Beautiful input via Rich."""
+    # Beautiful input via Rich
     if default:
         result = Prompt.ask(f"  [blade]▸[/] {prompt}", default=default, console=console)
     else:
@@ -215,12 +215,12 @@ def ask_input(prompt: str, default: str = "") -> str:
 
 
 def ask_confirm(prompt: str = "Начать?") -> bool:
-    """Confirmation await"""
+    # Confirmation await
     return Confirm.ask(f"  [gold]⚡ {prompt}[/]", console=console, default=False)
 
 
 def ask_target_input(prompt: str = None) -> str:
-    """Target input (username / телефон / ссылка)."""
+    # Target input (username / телефон / ссылка)
     if prompt is None:
         console.print()
         console.print("  [cyan]Введите получателя[/]")
@@ -259,7 +259,7 @@ def create_table(
 
 
 def print_table(table: Table):
-    """Prints out the table"""
+    # Prints out the table
     console.print()
     console.print(Padding(table, (0, 2)))
 
@@ -269,7 +269,7 @@ def print_table(table: Table):
 # ══════════════════════════════════════════════════════════════
 
 def print_stats_box(stats: dict, title: str = "РЕЗУЛЬТАТЫ"):
-    """Stat block in pannel"""
+    # Stat block in pannel
     lines = []
     for key, value in stats.items():
         lines.append(f"[stat.key]{key}[/]  [stat.val]{value}[/]")
@@ -292,7 +292,7 @@ def print_stats_box(stats: dict, title: str = "РЕЗУЛЬТАТЫ"):
 # ══════════════════════════════════════════════════════════════
 
 def print_round(num: int):
-    """Round header"""
+    # Round header
     console.print()
     console.print(Rule(f"[fire]⚔  Раунд #{num}[/]", style="fire", characters="━"))
 
@@ -302,7 +302,7 @@ def print_round(num: int):
 # ══════════════════════════════════════════════════════════════
 
 def print_sessions_table(sessions: list[str]):
-    """Prints session list"""
+    # Prints session list
     import os
 
     table = Table(
@@ -329,7 +329,7 @@ def print_sessions_table(sessions: list[str]):
 # ══════════════════════════════════════════════════════════════
 
 def print_config_box(config: dict, title: str = "НАСТРОЙКИ"):
-    """Settings block before starting"""
+    # Settings block before starting
     lines = []
     for key, value in config.items():
         lines.append(f"[cyan]{key:<16}[/] : [white]{value}[/]")
@@ -352,7 +352,7 @@ def print_config_box(config: dict, title: str = "НАСТРОЙКИ"):
 # ══════════════════════════════════════════════════════════════
 
 def print_main_menu():
-    """Main menu list"""
+    # Main menu list
     menu_items = [
         ("1", "💬", "Отправка личных сообщений"),
         ("2", "📝", "Комментарии в канале"),
@@ -414,7 +414,7 @@ def print_choices(items: list[tuple[str, str]], title: str = ""):
 
 
 def print_description_box(text: str, title: str = "", style: str = "yellow"):
-    """Description / Warning block"""
+    # Description / Warning block
     panel = Panel(
         text,
         title=f"[{style}]{title}[/]" if title else None,
@@ -432,7 +432,7 @@ def print_description_box(text: str, title: str = "", style: str = "yellow"):
 # ══════════════════════════════════════════════════════════════
 
 def print_goodbye():
-    """Farewell message"""
+    # Farewell message
     console.print()
     console.print(Rule(style="red"))
     console.print(
@@ -442,16 +442,16 @@ def print_goodbye():
 
 
 def print_interrupted():
-    """Ctrl+C interruption"""
+    # Ctrl+C interruption
     console.print(f"\n  [warning][!] Остановлено пользователем.[/]")
 
 
 def print_forced_exit():
-    """Forced exit"""
+    # Forced exit
     console.print(f"\n  [error][!] Принудительный выход.[/]")
 
 
 def press_enter():
-    """Enter await"""
+    # Enter await
     console.print()
     Prompt.ask("  [shadow]Enter для возврата в меню...[/]", console=console, default="")
