@@ -16,7 +16,7 @@ Why a SINGLE profile:
 """
 
 
-# ── Unified Desktop Profile for All Sessions ────────────────────
+# -- Unified Desktop Profile for All Sessions --------------------
 
 DESKTOP_DEVICE = {
     "device_model": "Desktop",

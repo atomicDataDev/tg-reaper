@@ -1,10 +1,6 @@
-"""
-Mode 4: Channel subscription
-"""
+"""Mode 3 (main): Subscribe to a channel."""
 
-import os
-
-from utils.client import create_client, get_session_name
+from core.client_factory import create_client, get_session_name
 from ui import (
     print_header, print_error, print_action,
     print_stats_box, ask_confirm, ask_input, print_interrupted,
@@ -15,7 +11,6 @@ from modes.comments import join_channel, join_channel_by_hash
 
 
 async def subscribe_account(session_path, link_type, link_value):
-    """Подписывает один аккаунт."""
     client = create_client(session_path)
     name = get_session_name(session_path)
     try:
@@ -27,7 +22,9 @@ async def subscribe_account(session_path, link_type, link_value):
         info = me.username or me.phone or f"id:{me.id}"
         print_action(f"{name} ({info}) подписывается...")
         if link_type == "hash":
-            return await join_channel_by_hash(client, link_value, name)
+            return await join_channel_by_hash(
+                client, link_value, name
+            )
         entity = await client.get_entity(link_value)
         return await join_channel(client, entity, name)
     except Exception as e:
@@ -38,7 +35,6 @@ async def subscribe_account(session_path, link_type, link_value):
 
 
 async def mode_subscribe(sessions):
-    # Main subscribe function
     print_header("📢  ПОДПИСКА НА КАНАЛ")
 
     raw_link = ask_input("Канал (username / ссылка)")

@@ -1,48 +1,45 @@
-"""
-Session File Management and Validation.
-"""
+"""Working with session files."""
 
 import os
-from utils.client import create_client
+from core.client_factory import create_client
 from ui import print_sessions_table
 
 
-def get_session_files(directory: str) -> list[str]:
-    """
-    Scans a directory for .session files and returns their paths without extensions.
-    
-    If the directory does not exist, it will be created automatically.
-    """
+def get_session_files(directory: str = None) -> list[str]:
+    from config import SESSIONS_DIR
+    directory = directory or SESSIONS_DIR
     if not os.path.exists(directory):
-        os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
         return []
-    
     files = []
-    # Sort files for consistent output in the UI
     for f in sorted(os.listdir(directory)):
-        if f.endswith(".session"):
-            # Return path without .session extension as required by Telethon
-            session_path = os.path.join(directory, f.replace(".session", ""))
-            files.append(session_path)
+        if f.endswith(".session") and not f.startswith("_temp_"):
+            files.append(
+                os.path.join(directory, f.replace(".session", ""))
+            )
     return files
 
 
+def get_session_names(directory: str = None) -> list[str]:
+    """Returns only session names (without path)."""
+    from config import SESSIONS_DIR
+    directory = directory or SESSIONS_DIR
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+        return []
+    names = []
+    for f in sorted(os.listdir(directory)):
+        if f.endswith(".session") and not f.startswith("_temp_"):
+            names.append(f[:-8])
+    return names
+
+
 def print_sessions(sessions: list[str]):
-    """
-    Displays the list of sessions in a formatted UI table.
-    """
     print_sessions_table(sessions)
 
 
 async def find_working_session(sessions: list[str]) -> str | None:
-    """
-    Iterates through session files and returns the path of the first authorized session.
-    
-    Utilizes create_client() to maintain a unified Desktop User-Agent,
-    preventing session revocation during the check.
-    """
     for s in sessions:
-        # Initialize client with updates disabled to save resources
         client = create_client(s, receive_updates=False)
         try:
             await client.connect()
@@ -50,10 +47,8 @@ async def find_working_session(sessions: list[str]) -> str | None:
                 await client.disconnect()
                 return s
         except Exception:
-            # Silently ignore errors (connection issues, banned accounts, etc.)
             pass
         finally:
-            # Ensure the client is always closed properly
             try:
                 await client.disconnect()
             except Exception:
