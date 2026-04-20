@@ -1,29 +1,32 @@
-"""
-Mode 1: Private message send
-"""
+"""Mode 1: Sending private messages."""
 
-import os
 import random
 import asyncio
 
-from telethon.errors import FloodWaitError, PeerFloodError, UserPrivacyRestrictedError
+from telethon.errors import (
+    FloodWaitError, PeerFloodError, UserPrivacyRestrictedError,
+)
 
 from config import DM_MESSAGES, MESSAGE_MODE
-from utils.client import create_client, get_session_name
+from core.client_factory import create_client, get_session_name
 from ui import (
     print_header, print_info, print_success, print_error,
     print_warning, print_action, print_dim, print_stats_box,
     print_round, print_config_box, ask_confirm, ask_input,
     print_choices, print_interrupted,
 )
-from utils.target import ask_target, resolve_target, resolve_target_with_session
+from utils.target import (
+    ask_target, resolve_target, resolve_target_with_session,
+)
 from utils.sessions import find_working_session
 from utils.delays import get_delay, ask_delay
 from utils.dialog import delete_dialog_for_sender
 
 
-async def send_dm(session_path, target_info, message, delete_after=False, delete_delay=0):
-    # Sends a message from a single account
+async def send_dm(
+    session_path, target_info, message,
+    delete_after=False, delete_delay=0,
+):
     client = create_client(session_path)
     name = get_session_name(session_path)
     try:
@@ -34,9 +37,13 @@ async def send_dm(session_path, target_info, message, delete_after=False, delete
         me = await client.get_me()
         info = me.username or me.phone or f"id:{me.id}"
 
-        entity, display = await resolve_target(client, target_info, name)
+        entity, display = await resolve_target(
+            client, target_info, name
+        )
         if not entity:
-            print_error(f"{name} — получатель не найден: {display}")
+            print_error(
+                f"{name} — получатель не найден: {display}"
+            )
             return False
 
         print_action(f"{name} ({info}) → {display}")
@@ -62,7 +69,6 @@ async def send_dm(session_path, target_info, message, delete_after=False, delete
 
 
 async def mode_dm(sessions):
-    # Main function of private message mode
     print_header("💬  ЛИЧНЫЕ СООБЩЕНИЯ")
 
     target_info = ask_target()
@@ -75,7 +81,9 @@ async def mode_dm(sessions):
         print_info("Проверяю доступность номера...")
         ss = await find_working_session(sessions)
         if ss:
-            uid, display = await resolve_target_with_session(ss, target_info)
+            uid, display = await resolve_target_with_session(
+                ss, target_info
+            )
             if uid:
                 print_success(f"Найден: {display} (ID: {uid})")
             else:
@@ -87,13 +95,18 @@ async def mode_dm(sessions):
 
     min_d, max_d = ask_delay()
 
-    delete_after = ask_input("Удалять диалог после? (да/нет)", "нет").lower() in ("да", "yes", "y", "д")
+    delete_after = ask_input(
+        "Удалять диалог после? (да/нет)", "нет"
+    ).lower() in ("да", "yes", "y", "д")
     delete_delay = 0.0
     if delete_after:
         dd = ask_input("Пауза перед удалением, сек", "2")
         delete_delay = float(dd) if dd else 2.0
 
-    print_choices([("1", "Один круг"), ("2", "Цикл (Ctrl+C)")], "Режим отправки:")
+    print_choices(
+        [("1", "Один круг"), ("2", "Цикл (Ctrl+C)")],
+        "Режим отправки:",
+    )
     send_mode = ask_input("Выбор", "1")
 
     print_config_box({
@@ -113,15 +126,22 @@ async def mode_dm(sessions):
             print_round(round_num)
             for i, sess in enumerate(sessions):
                 msg = (
-                    random.choice(DM_MESSAGES) if MESSAGE_MODE == "random"
+                    random.choice(DM_MESSAGES)
+                    if MESSAGE_MODE == "random"
                     else DM_MESSAGES[msg_idx % len(DM_MESSAGES)]
                 )
                 msg_idx += 1
                 print_dim(f'Сообщение: "{msg[:60]}"')
-                ok = await send_dm(sess, target_info, msg, delete_after, delete_delay)
+                ok = await send_dm(
+                    sess, target_info, msg,
+                    delete_after, delete_delay,
+                )
                 total_ok += ok
                 total_fail += not ok
-                if not (i == len(sessions) - 1 and send_mode != "2"):
+                if not (
+                    i == len(sessions) - 1
+                    and send_mode != "2"
+                ):
                     await get_delay(min_d, max_d)
             if send_mode != "2":
                 break

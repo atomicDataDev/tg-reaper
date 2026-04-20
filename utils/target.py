@@ -1,27 +1,25 @@
-"""
-Recipient resolve by username or moblie phone
-"""
+"""Resolve recipients by username or phone."""
 
 import re
 import random
 from telethon import TelegramClient
 from telethon.tl.functions.contacts import (
-    ImportContactsRequest,
-    DeleteContactsRequest,
+    ImportContactsRequest, DeleteContactsRequest,
     ResolvePhoneRequest,
 )
 from telethon.tl.types import InputPhoneContact
 from telethon.errors import FloodWaitError
 
-from config import API_ID, API_HASH
-from ui import print_success, print_error, print_info, print_dim, print_trash, ask_target_input
+from core.client_factory import create_client
+from ui import (
+    print_success, print_error, print_dim,
+    print_trash, ask_target_input,
+)
 from utils.parsers import normalize_phone, is_phone_number
 
 
 def ask_target(prompt: str = None) -> dict:
-    """Интерактивный ввод цели."""
     raw = ask_target_input(prompt)
-
     if not raw:
         return {"type": "invalid", "value": None, "display": ""}
 
@@ -31,17 +29,12 @@ def ask_target(prompt: str = None) -> dict:
         return {"type": "username", "value": username, "display": f"@{username}"}
 
     cleaned = raw.lstrip("@")
-
     if is_phone_number(cleaned):
         phone = normalize_phone(cleaned)
         return {"type": "phone", "value": phone, "display": phone}
 
-    username = cleaned
-    if re.match(r"^[a-zA-Z_][a-zA-Z0-9_]{3,}$", username):
-        return {"type": "username", "value": username, "display": f"@{username}"}
-
-    if username:
-        return {"type": "username", "value": username, "display": f"@{username}"}
+    if cleaned:
+        return {"type": "username", "value": cleaned, "display": f"@{cleaned}"}
 
     return {"type": "invalid", "value": None, "display": ""}
 
@@ -53,7 +46,6 @@ async def resolve_target(
     add_contact: bool = True,
     remove_contact_after: bool = True,
 ) -> tuple:
-    """Резолвит цель в entity."""
     prefix = f"[{session_name}] " if session_name else ""
 
     if target_info["type"] == "username":
@@ -62,8 +54,7 @@ async def resolve_target(
             name = getattr(entity, "first_name", "") or ""
             if getattr(entity, "last_name", ""):
                 name += f" {entity.last_name}"
-            name = name.strip() or target_info["display"]
-            return entity, name
+            return entity, name.strip() or target_info["display"]
         except Exception as e:
             return None, f"{type(e).__name__}: {e}"
 
@@ -82,65 +73,53 @@ async def resolve_target(
             pass
         except Exception as e:
             if "PHONE_NOT_OCCUPIED" in str(e):
-                return None, f"Номер {phone} не зарегистрирован в Telegram"
-            print_dim(f"{prefix}ResolvePhone: {type(e).__name__}, другой метод...")
+                return None, f"Номер {phone} не зарегистрирован"
+            print_dim(f"{prefix}ResolvePhone: {type(e).__name__}")
 
         try:
             entity = await client.get_entity(phone)
             name = getattr(entity, "first_name", "") or ""
             if getattr(entity, "last_name", ""):
                 name += f" {entity.last_name}"
-            name = name.strip() or phone
-            print_success(f"{prefix}Найден напрямую: {name}")
-            return entity, name
+            return entity, name.strip() or phone
         except Exception:
             pass
 
         if add_contact:
-            contact_id = None
             try:
                 random_id = random.randint(100000, 999999)
                 contact = InputPhoneContact(
-                    client_id=random_id,
-                    phone=phone,
-                    first_name="Temp",
-                    last_name=f"Contact_{random_id}",
+                    client_id=random_id, phone=phone,
+                    first_name="Temp", last_name=f"Contact_{random_id}",
                 )
                 result = await client(ImportContactsRequest(contacts=[contact]))
-
                 if result.users:
                     user = result.users[0]
-                    contact_id = user.id
                     entity = await client.get_entity(user.id)
                     name = f"{user.first_name or ''} {user.last_name or ''}".strip() or phone
-                    print_success(f"{prefix}Найден через контакты: {name}")
-
-                    if remove_contact_after and contact_id:
+                    if remove_contact_after:
                         try:
-                            input_user = await client.get_input_entity(contact_id)
+                            input_user = await client.get_input_entity(user.id)
                             await client(DeleteContactsRequest(id=[input_user]))
                             print_trash(f"{prefix}Временный контакт удалён")
                         except Exception:
                             pass
                     return entity, name
-                else:
-                    if result.retry_contacts:
-                        return None, f"Номер {phone} не найден (retry_contacts)"
-                    return None, f"Номер {phone} не зарегистрирован или скрыт"
+                return None, f"Номер {phone} не зарегистрирован или скрыт"
             except FloodWaitError as e:
-                return None, f"FloodWait {e.seconds} сек при добавлении контакта"
+                return None, f"FloodWait {e.seconds} сек"
             except Exception as e:
-                return None, f"Ошибка импорта контакта: {type(e).__name__}: {e}"
+                return None, f"Ошибка: {type(e).__name__}: {e}"
 
-        return None, f"Не удалось найти пользователя по номеру {phone}"
-    else:
-        return None, "Некорректный формат получателя"
+        return None, f"Не удалось найти по номеру {phone}"
+    return None, "Некорректный формат"
 
 
-async def resolve_target_with_session(session_path: str, target_info: dict) -> tuple:
-    """Резолвит цель через указанную сессию."""
+async def resolve_target_with_session(
+    session_path: str, target_info: dict,
+) -> tuple:
     import os
-    client = TelegramClient(session_path, API_ID, API_HASH)
+    client = create_client(session_path, receive_updates=False)
     name = os.path.basename(session_path)
     try:
         await client.connect()
