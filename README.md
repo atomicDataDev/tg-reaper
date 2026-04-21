@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# TG REAPER v1.0 
-=======
 # TG REAPER v2.0
->>>>>>> development
 
 **TG REAPER** is a professional, multi-functional Telegram automation tool built with **Telethon** and **Rich**. Designed for security researchers and automation enthusiasts, it features a high-performance terminal interface, a robust session management system, and advanced stealth capabilities.
 
